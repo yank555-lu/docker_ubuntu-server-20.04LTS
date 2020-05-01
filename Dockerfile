@@ -29,12 +29,11 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     vim \
     python \
     python3 \
+    runit \
     && apt-get purge -y --auto-remove \
     && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
 # Setup users and folders
-ENV ENTRYPOINT_DEFAULT_USER=$USER_NAME
-
 RUN echo "root:$ROOT_PASSWD" | chpasswd
 
 COPY assets/bashrc /tmp/build_image-bashrc
@@ -63,15 +62,15 @@ RUN if [ "$USER_NAME" = "unset" ] ; \
         chmod 600 /home/$USER_NAME/.ssh/config ; \
     fi
 
-# Setup ssh server config (permit root password login)
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+# Setup my_init
+COPY assets/my_init /sbin/my_init
+RUN chmod 700 /sbin/my_init ; \
+    mkdir -p /etc/my_init.d ; \
+    mkdir -p /etc/my_init.pre_shutdown.d ; \
+    mkdir -p /etc/my_init.post_shutdown.d
 
 # Set Timezone to Luxembourg
 RUN ln -sf /usr/share/zoneinfo/Europe/Luxembourg /etc/localtime
 
-# Setup entrypoint shell script
-COPY assets/entrypoint.sh /etc/entrypoint.sh
-RUN chmod 700 /etc/entrypoint.sh
-
 # Start services
-ENTRYPOINT ["/etc/entrypoint.sh"]
+ENTRYPOINT ["/sbin/my_init"]

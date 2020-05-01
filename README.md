@@ -19,12 +19,14 @@ This ensures correct file system permissions if you bind mount local filesystems
 
 Use following command to simply run the image :
 
-    docker run --rm -it \
+    docker run -d --rm \
+        --name volatile-ubuntu-server \
         -h volatile-ubuntu-server \
         ubuntu-server:focal
 
 Use following command to create a container from the image :
 
-    docker run -it \
+    docker run -d \
+        --name ubuntu-server \
         -h ubuntu-server \
         ubuntu-server:focal
