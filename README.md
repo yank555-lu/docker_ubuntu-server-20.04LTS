@@ -30,3 +30,37 @@ Use following command to create a container from the image :
         --name ubuntu-server \
         -h ubuntu-server \
         ubuntu-server:focal
+
+## Network cofiguration ##
+
+In order to bind the ubuntu server container into your network, bridging it with your physical network interface, you need to create a macvlan docker network for your container :
+
+    docker network create \
+        -d macvlan \
+        --subnet <your subnet> \
+        --gateway <the gateway address in your network> \
+        --ip-range <the IP address range available in this docker network> \
+        -o parent=<network interface to bind to> \
+        <docker network name>
+
+Example :
+
+    docker network create \
+        -d macvlan \
+        --subnet 192.168.10.0/24 \
+        --gateway 192.168.10.1 \
+        --ip-range 192.168.10.10/32 \
+        -o parent=eth0 \
+        my_service
+
+* Note : setting the IP range to "/32" allows for only one IP to be usable by docker, under which the docker container host is reachable by other machines on your network.
+
+## Run Image in a specific docker network ##
+
+Use following command to run the image in the specific docker network :
+
+    docker run -d --rm \
+        --name volatile-ubuntu-server \
+        --network my_service \
+        -h volatile-ubuntu-server \
+        ubuntu-server:focal
