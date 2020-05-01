@@ -8,7 +8,11 @@ echo " "
 echo "Starting services :"
 service ssh start
 
-echo " "
-echo "Switching to user $ENTRYPOINT_DEFAULT_USER..."
-echo " "
-su - "$ENTRYPOINT_DEFAULT_USER"
+if [ "$ENTRYPOINT_DEFAULT_USER" != "unset" ] ; then
+    echo " "
+    echo "Switching to user $ENTRYPOINT_DEFAULT_USER..."
+    echo " "
+    su - "$ENTRYPOINT_DEFAULT_USER"
+else
+    bash
+fi

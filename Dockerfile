@@ -6,10 +6,10 @@ FROM ubuntu:focal
 MAINTAINER Jean-Pierre Rasquin <yank555-lu@gmail.com>
 
 # Build Arguments
-ARG USER_NAME
-ARG USER_ID
-ARG GROUP_ID
-ARG USER_PASSWD
+ARG USER_NAME="unset"
+ARG USER_ID="unset"
+ARG GROUP_ID="unset"
+ARG USER_PASSWD="unset"
 ARG ROOT_PASSWD
 
 # Install dependencies
@@ -37,27 +37,31 @@ ENV ENTRYPOINT_DEFAULT_USER=$USER_NAME
 
 RUN echo "root:$ROOT_PASSWD" | chpasswd
 
-RUN addgroup --gid $GROUP_ID $USER_NAME
-RUN adduser --home /home/$USER_NAME --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER_NAME
-RUN echo "$USER_NAME:$USER_PASSWD" | chpasswd
+COPY assets/bashrc /tmp/build_image-bashrc
+COPY assets/ssh-config /tmp/build_image-config
 
-RUN rm /home/$USER_NAME/.bashrc
-COPY assets/bashrc /home/$USER_NAME/.bashrc
-RUN chown $USER_NAME:$USER_NAME /home/$USER_NAME/.bashrc
-RUN chmod 644 /home/$USER_NAME/.bashrc
-
-RUN mkdir /home/$USER_NAME/bin
-RUN chown $USER_NAME:$USER_NAME /home/$USER_NAME/bin
-RUN chmod 755 /home/$USER_NAME/bin
-
-# Setup ssh client config
-RUN mkdir /home/$USER_NAME/.ssh
-RUN chown $USER_NAME:$USER_NAME /home/$USER_NAME/.ssh
-RUN chmod 700 /home/$USER_NAME/.ssh
-
-COPY assets/ssh-config /home/$USER_NAME/.ssh/config
-RUN chown $USER_NAME:$USER_NAME /home/$USER_NAME/.ssh/config
-RUN chmod 600 /home/$USER_NAME/.ssh/config
+RUN if [ "$USER_NAME" = "unset" ] ; \
+    then \
+        rm /tmp/build_image-bashrc ; \
+        rm /tmp/build_image-config ; \
+    else \
+        addgroup --gid $GROUP_ID $USER_NAME ; \
+        adduser --home /home/$USER_NAME --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER_NAME ; \
+        echo "$USER_NAME:$USER_PASSWD" | chpasswd ; \
+        rm /home/$USER_NAME/.bashrc ; \
+        mv /tmp/build_image-bashrc /home/$USER_NAME/.bashrc ; \
+        chown $USER_NAME:$USER_NAME /home/$USER_NAME/.bashrc ; \
+        chmod 644 /home/$USER_NAME/.bashrc ; \
+        mkdir /home/$USER_NAME/bin ; \
+        chown $USER_NAME:$USER_NAME /home/$USER_NAME/bin ; \
+        chmod 755 /home/$USER_NAME/bin ; \
+        mkdir /home/$USER_NAME/.ssh ; \
+        chown $USER_NAME:$USER_NAME /home/$USER_NAME/.ssh ; \
+        chmod 700 /home/$USER_NAME/.ssh ; \
+        mv /tmp/build_image-config /home/$USER_NAME/.ssh/config ; \
+        chown $USER_NAME:$USER_NAME /home/$USER_NAME/.ssh/config ; \
+        chmod 600 /home/$USER_NAME/.ssh/config ; \
+    fi
 
 # Setup ssh server config (permit root password login)
 RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
