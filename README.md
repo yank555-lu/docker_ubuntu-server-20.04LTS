@@ -27,9 +27,12 @@ Use following command to simply run the image :
 Use following command to create a container from the image :
 
     docker run -d \
+        --restart unless-stopped \
         --name ubuntu-server \
         -h ubuntu-server \
         ubuntu-server:focal
+
+* Note : the container will restart (on reboots or whenever it stops) unless you explicitely stop it manually.
 
 ## Network cofiguration ##
 
