@@ -69,6 +69,11 @@ RUN chmod 700 /sbin/my_init ; \
     mkdir -p /etc/my_init.pre_shutdown.d ; \
     mkdir -p /etc/my_init.post_shutdown.d
 
+# Setup ssh server
+COPY assets/sshd.runit /etc/service/sshd/run
+RUN chmod 700 /etc/service/sshd/run
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
 # Set Timezone to Luxembourg
 RUN ln -sf /usr/share/zoneinfo/Europe/Luxembourg /etc/localtime
 
