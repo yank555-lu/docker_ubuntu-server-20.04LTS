@@ -96,6 +96,10 @@ RUN chmod 700 /sbin/my_init ; \
     mkdir -p /etc/my_init.pre_shutdown.d ; \
     mkdir -p /etc/my_init.post_shutdown.d
 
+# Setup setuser
+COPY assets/setuser /sbin/setuser
+RUN chmod 700 /sbin/setuser
+
 # Setup ssh server
 COPY assets/sshd.runit /etc/service/sshd/run
 RUN chmod 700 /etc/service/sshd/run ; \
