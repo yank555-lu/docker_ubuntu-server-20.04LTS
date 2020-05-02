@@ -12,17 +12,39 @@ ARG GROUP_ID="unset"
 ARG USER_PASSWD="unset"
 ARG ROOT_PASSWD
 
-# Install dependencies
+# Define Setup Environment
 USER root
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get -y update && apt-get install -y --no-install-recommends \
+
+# Unminimize Ubuntu image
+RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes ; \
+    apt-get update ; \
+    apt-get upgrade ; \
+    apt-get install apt-utils apt-transport-https ; \
+    dpkg -S /usr/share/man/ |sed 's|, |\n|g;s|: [^:]*$||' | DEBIAN_FRONTEND=noninteractive xargs apt-get install --reinstall -y ; \
+    dpkg --verify --verify-format rpm | awk '/..5......   \/usr\/share\/doc/ {print $2}' | sed 's|/[^/]*$||' | sort |uniq \
+         | xargs dpkg -S | sed 's|, |\n|g;s|: [^:]*$||' | uniq | DEBIAN_FRONTEND=noninteractive xargs apt-get install --reinstall -y ; \
+    rm -f /usr/bin/man ; \
+    dpkg-divert --quiet --remove --rename /usr/bin/man ; \
+    apt-get install --reinstall -y man-db manpages ; \
+    rm -f /etc/update-motd.d/60-unminimize ; \
+    rm -f /usr/local/sbin/unminimize
+
+# Install additional dependencies
+RUN apt-get install -y --no-install-recommends \
+    gnupg \
     net-tools \
+    iputils-ping \
     dnsutils \
-    inetutils-ping \
+    iproute2 \
     traceroute \
     openssh-client \
     openssh-server \
+    openssl \
+    ca-certificates \
     curl \
+    wget \
+    git \
     zip \
     unzip \
     rsync \
@@ -30,8 +52,13 @@ RUN apt-get -y update && apt-get install -y --no-install-recommends \
     python \
     python3 \
     runit \
-    && apt-get purge -y --auto-remove \
-    && apt-get clean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
+    less \
+    dialog \
+    cifs-utils \
+    nfs-client \
+    cpio \
+    ethtool \
+    ftp
 
 # Setup users and folders
 RUN echo "root:$ROOT_PASSWD" | chpasswd
