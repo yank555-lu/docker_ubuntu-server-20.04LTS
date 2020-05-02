@@ -71,8 +71,10 @@ RUN chmod 700 /sbin/my_init ; \
 
 # Setup ssh server
 COPY assets/sshd.runit /etc/service/sshd/run
-RUN chmod 700 /etc/service/sshd/run
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN chmod 700 /etc/service/sshd/run ; \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config ; \
+    rm /etc/ssh/ssh_host*key* ; \
+    touch /etc/service/sshd/never_run
 
 # Set Timezone to Luxembourg
 RUN ln -sf /usr/share/zoneinfo/Europe/Luxembourg /etc/localtime

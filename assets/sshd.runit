@@ -1,6 +1,15 @@
 #!/bin/sh
 set -e
 
+# Generate unique keys for each container created from this image on first run
+if [ -e /etc/service/sshd/never_run ]; then
+    echo "First time SSH server runs in this container, regenerate keys for this instance..."
+    export LC_ALL=C
+    export DEBIAN_FRONTEND=noninteractive
+    dpkg-reconfigure openssh-server
+    rm /etc/service/sshd/never_run
+fi
+
 # Create the PrivSep empty dir if necessary
 if [ ! -d /run/sshd ]; then
     mkdir /run/sshd
