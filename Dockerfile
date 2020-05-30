@@ -30,6 +30,9 @@ RUN rm -f /etc/dpkg/dpkg.cfg.d/excludes ; \
     rm -f /etc/update-motd.d/60-unminimize ; \
     rm -f /usr/local/sbin/unminimize
 
+# Update all existing packages
+RUN apt-get upgrade -y
+
 # Install additional dependencies
 RUN apt-get install -y --no-install-recommends \
     gnupg \
